@@ -1,6 +1,6 @@
 
 import type { Card, Suit, Rank } from "../types";
-import type { HeroCard, Unit, FieldLine, DuelState } from "../types/game";
+import type { HeroCard, Unit, FieldLine } from "../types/game";
 import { createDeck, shuffle, draw } from "../data/cards";
 import { cardToUnitStats, type UnitStats } from "./unit-stats";
 
@@ -129,8 +129,8 @@ export function confirmDraft(
     (card, i) => cardToUnit(card, enemySelection.heroCard, i, 'enemy')
   );
   
-  const playerField: FieldLine = Object.freeze(playerUnits);
-  const enemyField: FieldLine = Object.freeze(enemyUnits);
+  const playerField: FieldLine = Object.freeze(playerUnits) as FieldLine;
+  const enemyField: FieldLine = Object.freeze(enemyUnits) as FieldLine;
   
   return {
     playerHero: Object.freeze(playerHero),

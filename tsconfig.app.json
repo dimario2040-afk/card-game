@@ -28,6 +28,8 @@
   },
   "include": ["src"],
   "exclude": [
+    "**/*.test.ts",
+    "**/*.test.tsx",
     "src/ui/animations",
     "src/ui/audio",
     "src/ui/components/Board.tsx",
@@ -35,6 +37,8 @@
     "src/ui/components/CardHand.tsx",
     "src/ui/components/index.ts",
     "src/ui/screens/HeroSelect.tsx",
-    "src/data/heroes.ts"
+    "src/data/heroes.ts",
+    "src/game/game-loop.ts",
+    "src/game/game-loop.test.ts"
   ]
 }

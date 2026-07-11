@@ -1,13 +1,6 @@
 
-import type { Card, Suit } from "../types";
+import type { Card } from "../types";
 import type { Unit, DuelState } from "../types/game";
-
-const SUIT_RANK: Record<Suit, number> = {
-  hearts: 4,
-  diamonds: 3,
-  clubs: 2,
-  spades: 1,
-};
 
 export type ActionType = 'move' | 'attack' | 'spell' | 'pass';
 
@@ -41,7 +34,7 @@ export function executeUnitAction(
   unit: Unit,
   action: ActionType,
   target: string | null,
-  state: DuelState
+  _state: DuelState
 ): BattleResult {
   switch (action) {
     case 'move':

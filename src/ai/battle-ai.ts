@@ -1,5 +1,4 @@
 
-import type { Card, Suit } from "../types";
 import type { DuelState, Unit, FieldLine } from "../types/game";
 import type { ActionType } from "../game/battle-loop";
 
@@ -37,7 +36,7 @@ export function decideUnitAction(
     return { action: 'attack', target: target.id };
 }
 
-export function decideDuelAction(duelState: DuelState, personality: Personality): DuelAction {
+export function decideDuelAction(personality: Personality): DuelAction {
     // Упрощенная логика: блеф зависит от личности
     const bluffChance = personality === 'aggro' ? 0.3 : personality === 'defensive' ? 0.05 : 0.15;
     

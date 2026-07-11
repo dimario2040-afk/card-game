@@ -11,7 +11,7 @@ export interface DuelResult {
   readonly log: string;
 }
 
-export function resolveBet(duel: DuelState, action: 'fold' | 'call' | 'raise', amount?: number): DuelState {
+export function resolveBet(duel: DuelState, _action: 'fold' | 'call' | 'raise', _amount?: number): DuelState {
   // Логика ставок (временно упрощена)
   return { ...duel, phase: 'combat' };
 }

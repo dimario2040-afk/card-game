@@ -4,7 +4,6 @@ import { Battlefield } from './ui/screens/Battlefield'
 import { DraftScreen } from './ui/screens/DraftScreen'
 import { ResultScreen } from './ui/screens/ResultScreen'
 import { MenuScreen } from './ui/screens/MenuScreen'
-import type { Card } from '@/types'
 
 // ─── Error Boundary ─────────────────────────────────────────────────────
 

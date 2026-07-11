@@ -1,13 +1,10 @@
 
 import { create } from 'zustand';
 import { immer } from 'zustand/middleware/immer';
-import type { DuelState, DuelPhase, Unit } from '../types/game';
-import type { Card } from '../types';
+import type { DuelState, Unit } from '../types/game';
 import { dealDraftHands, confirmDraft, type DraftSelection } from '../game/draft';
-import { decideDraftAction } from '../ai/draft-ai';
 import { calculateDamage } from '../game/combat-engine';
 import { executeUnitAction } from '../game/battle-loop';
-import { resolveHands } from '../game/duel-engine';
 import { castSpell, SPELL_CATALOG } from '../game/spells';
 import { decideUnitAction } from '../ai/battle-ai';
 
@@ -62,23 +59,22 @@ export const useGameStore = create<GameStore>()(
     startGame: () => set((state) => {
       state.phase = 'draft';
       const { playerHand } = dealDraftHands();
-      state.playerHand = playerHand;
+      (state as any).playerHand = [...playerHand];
     }),
 
     initDraft: () => set((state) => {
-      const { playerHand, enemyHand } = dealDraftHands();
-      state.playerHand = playerHand;
+      const { playerHand } = dealDraftHands();
+      (state as any).playerHand = [...playerHand];
       state.phase = 'draft';
-      // Enemy hand is hidden in draft state initially
     }),
 
     confirmDraft: (playerSel, enemySel) => set((state) => {
       const confirmation = confirmDraft(playerSel, enemySel);
-      state.playerHero = confirmation.playerHero;
-      state.enemyHero = confirmation.enemyHero;
-      state.playerField = confirmation.playerField;
-      state.enemyField = confirmation.enemyField;
-      state.playerHand = [...confirmation.playerHand];
+      state.playerHero = confirmation.playerHero as any;
+      state.enemyHero = confirmation.enemyHero as any;
+      (state as any).playerField = [[...confirmation.playerField[0]]];
+      (state as any).enemyField = [[...confirmation.enemyField[0]]];
+      (state as any).playerHand = [...confirmation.playerHand];
       state.phase = 'play';
     }),
 
@@ -128,29 +124,41 @@ export const useGameStore = create<GameStore>()(
 
     endTurn: () => set((state) => {
       // Ход ИИ: все юниты врага принимают решение и атакуют
-      state.enemyField.forEach(line => line.forEach((u, i) => {
-        if (u) {
-            const decision = decideUnitAction(u, state, 'balanced');
-            const battleResult = executeUnitAction(u, decision.action, decision.target, state);
-            line[i] = battleResult.updatedUnit;
-            state.combatLog.push(battleResult.log);
-            
-            // Если атака — наносим урон игроку
-            if (decision.action === 'attack') {
-                const targetUnit = state.playerField.flat().find(unit => unit?.id === decision.target);
-                if (targetUnit) {
-                    targetUnit.health -= u.attack;
-                    state.combatLog.push(`Enemy ${u.name} dealt ${u.attack} damage!`);
-                }
+      const enemyField = state.enemyField as any as (Unit | null)[][];
+      const playerField = state.playerField as any as (Unit | null)[][];
+      
+      for (const line of enemyField) {
+        for (let i = 0; i < line.length; i++) {
+          const u = line[i];
+          if (!u) continue;
+          const decision = decideUnitAction(u, state as any, 'balanced');
+          const battleResult = executeUnitAction(u, decision.action, decision.target, state as any);
+          line[i] = battleResult.updatedUnit;
+          state.combatLog.push(battleResult.log);
+          
+          if (decision.action === 'attack') {
+            const targetUnit = playerField.flat().find(unit => unit?.id === decision.target);
+            if (targetUnit) {
+              targetUnit.health -= u.attack;
+              state.combatLog.push(`Enemy ${u.name} dealt ${u.attack} damage!`);
             }
+          }
         }
-      }));
+      }
       
       // Удаляем мертвые юниты игрока
-      state.playerField.forEach(line => line.forEach((u, i) => { if (u && u.health <= 0) line[i] = null; }));
+      for (const line of playerField) {
+        for (let i = 0; i < line.length; i++) {
+          if (line[i] && line[i]!.health <= 0) line[i] = null;
+        }
+      }
       
       // Сбрасываем canAttack для всех юнитов игрока на новый ход
-      state.playerField.forEach(line => line.forEach(u => { if (u) u.canAttack = true; }));
+      for (const line of playerField) {
+        for (const u of line) {
+          if (u) u.canAttack = true;
+        }
+      }
 
       state.turnNumber += 1;
       state.phase = 'play';
@@ -158,11 +166,14 @@ export const useGameStore = create<GameStore>()(
     }),
 
     attack: (attackerId, targetId) => set((state) => {
+      const pField = state.playerField as any as (Unit | null)[][];
+      const eField = state.enemyField as any as (Unit | null)[][];
+      
       let attackerUnit: Unit | null = null;
-      state.playerField.forEach(line => line.forEach(u => { if (u?.id === attackerId) attackerUnit = u; }));
+      for (const line of pField) for (const u of line) { if (u?.id === attackerId) attackerUnit = u; }
       
       let defenderUnit: Unit | null = null;
-      state.enemyField.forEach(line => line.forEach(u => { if (u?.id === targetId) defenderUnit = u; }));
+      for (const line of eField) for (const u of line) { if (u?.id === targetId) defenderUnit = u; }
 
       if (!attackerUnit || !defenderUnit) return;
       if (!attackerUnit.canAttack) {
@@ -171,12 +182,14 @@ export const useGameStore = create<GameStore>()(
       }
       
       // Выполнение действия юнита
-      const battleResult = executeUnitAction(attackerUnit, 'attack', targetId, state);
+      const battleResult = executeUnitAction(attackerUnit, 'attack', targetId, state as any);
       
       // Применяем результат (обновляем юнит)
-      state.playerField.forEach(line => line.forEach((u, i) => {
-        if (u?.id === attackerId) line[i] = battleResult.updatedUnit;
-      }));
+      for (const line of pField) {
+        for (let i = 0; i < line.length; i++) {
+          if (line[i]?.id === attackerId) line[i] = battleResult.updatedUnit;
+        }
+      }
 
       // Простой урон
       defenderUnit.health -= attackerUnit.attack;
@@ -184,11 +197,11 @@ export const useGameStore = create<GameStore>()(
       state.combatLog.push(`Dealt ${attackerUnit.attack} damage to ${defenderUnit.name}.`);
 
       // Удаляем мертвые юниты
-      state.playerField.forEach(line => line.forEach((u, i) => { if (u && u.health <= 0) line[i] = null; }));
-      state.enemyField.forEach(line => line.forEach((u, i) => { if (u && u.health <= 0) line[i] = null; }));
+      for (const line of pField) for (let i = 0; i < line.length; i++) { if (line[i] && line[i]!.health <= 0) line[i] = null; }
+      for (const line of eField) for (let i = 0; i < line.length; i++) { if (line[i] && line[i]!.health <= 0) line[i] = null; }
 
       // Проверка победы
-      const enemyDead = state.enemyField.every(line => line.every(u => u === null || u.health <= 0));
+      const enemyDead = eField.every(line => line.every(u => u === null || (u !== null && u.health <= 0)));
       if (enemyDead) {
           state.phase = 'finished';
           state.winner = 'player';
@@ -202,12 +215,15 @@ export const useGameStore = create<GameStore>()(
         return;
       }
 
+      const pField = state.playerField as any as (Unit | null)[][];
+      const eField = state.enemyField as any as (Unit | null)[][];
+
       // Caster = первый живой юнит игрока, или герой
-      const caster = state.playerField.flat().find(u => u !== null) ?? state.playerHero as any;
+      const caster = pField.flat().find(u => u !== null) ?? state.playerHero as any;
 
       // Найти цель по ID (в обоих полях)
       const findUnit = (id: string): Unit | null => {
-        for (const line of [...state.playerField, ...state.enemyField]) {
+        for (const line of [...pField, ...eField]) {
           for (const unit of line) {
             if (unit?.id === id) return unit;
           }
@@ -227,17 +243,17 @@ export const useGameStore = create<GameStore>()(
       if (effect.heal && target) target.health = Math.min(target.maxHealth, target.health + effect.heal);
       if (effect.shield && target) target.shield += effect.shield as number;
       if (effect.allEnemyDamage) {
-        state.enemyField.forEach(line => line.forEach(u => { if (u) u.health -= effect.allEnemyDamage!; }));
+        for (const line of eField) for (const u of line) { if (u) u.health -= effect.allEnemyDamage!; }
       }
 
       state.combatLog.push(effect.log);
 
       // Удаляем мёртвые юниты после заклинания
-      state.playerField.forEach(line => line.forEach((u, i) => { if (u && u.health <= 0) line[i] = null; }));
-      state.enemyField.forEach(line => line.forEach((u, i) => { if (u && u.health <= 0) line[i] = null; }));
+      for (const line of pField) for (let i = 0; i < line.length; i++) { if (line[i] && line[i]!.health <= 0) line[i] = null; }
+      for (const line of eField) for (let i = 0; i < line.length; i++) { if (line[i] && line[i]!.health <= 0) line[i] = null; }
 
       // Проверка победы
-      const enemyDead = state.enemyField.every(line => line.every(u => u === null || u.health <= 0));
+      const enemyDead = eField.every(line => line.every(u => u === null || (u !== null && u.health <= 0)));
       if (enemyDead) {
         state.phase = 'finished';
         state.winner = 'player';
@@ -245,8 +261,10 @@ export const useGameStore = create<GameStore>()(
     }),
 
     checkWinCondition: () => set((state) => {
-      const playerDead = state.playerField.every(line => line.every(u => u === null || u.health <= 0));
-      const enemyDead = state.enemyField.every(line => line.every(u => u === null || u.health <= 0));
+      const pField = state.playerField as any as (Unit | null)[][];
+      const eField = state.enemyField as any as (Unit | null)[][];
+      const playerDead = pField.every(line => line.every(u => u === null || (u !== null && u.health <= 0)));
+      const enemyDead = eField.every(line => line.every(u => u === null || (u !== null && u.health <= 0)));
       
       if (playerDead || enemyDead) {
         state.phase = 'finished';

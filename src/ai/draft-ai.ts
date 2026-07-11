@@ -1,5 +1,4 @@
 import type { Card } from "../types";
-import { confirmDraft, type DraftSelection } from "../game/draft";
 
 export interface DraftAction {
   readonly hero: Card;
