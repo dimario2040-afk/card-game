@@ -78,7 +78,7 @@ export const useGameStore = create<GameStore>()(
       state.enemyHero = confirmation.enemyHero;
       state.playerField = confirmation.playerField;
       state.enemyField = confirmation.enemyField;
-      state.playerHand = confirmation.playerHand;
+      state.playerHand = [...confirmation.playerHand];
       state.phase = 'play';
     }),
 
@@ -254,7 +254,7 @@ export const useGameStore = create<GameStore>()(
       }
     }),
 
-    resetGame: () => set((state) => ({
+    resetGame: () => set(() => ({
       ...INITIAL_STATE,
       phase: 'menu',
       turnNumber: 1,

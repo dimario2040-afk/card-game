@@ -9,7 +9,7 @@ import type { Spell } from '../../game/spells';
 
 export const Battlefield: React.FC = () => {
   const {
-    playerField, enemyField, playerHero, enemyHero, phase, endTurn,
+    playerField, enemyField, playerHero, enemyHero, endTurn,
     combatLog, attack, castSpell, playHand,
     selectedPlayerUnitId, selectPlayerUnit,
     selectedEnemyUnitId, selectEnemyUnit,

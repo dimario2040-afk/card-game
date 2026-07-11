@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useGameStore } from '../../store/game-store';
 
 // ─── Floating card in the background ─────────────────────────────────

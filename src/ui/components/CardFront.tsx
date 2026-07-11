@@ -33,7 +33,6 @@ export function CardFront({
   const isSelected = selectedCardIds.includes(card.id)
 
   const { symbol, color: suitColor } = suitDisplay(card.suit)
-  const isRed = suitColor === 'text-red-400'
 
   const handleClick = () => {
     if (disabled) return

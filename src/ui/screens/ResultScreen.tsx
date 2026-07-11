@@ -28,7 +28,7 @@ function generateSparkles(count: number): Sparkle[] {
 // ─── Component ────────────────────────────────────────────────────────
 
 export const ResultScreen: React.FC = () => {
-  const { winner, resetGame, turnNumber, playerHero, enemyHero } = useGameStore();
+  const { winner, resetGame, turnNumber } = useGameStore();
   const isWin = winner === 'player';
   const [sparkles] = useState(() => generateSparkles(30));
 

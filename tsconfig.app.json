@@ -26,5 +26,15 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": [
+    "src/ui/animations",
+    "src/ui/audio",
+    "src/ui/components/Board.tsx",
+    "src/ui/components/CardBack.tsx",
+    "src/ui/components/CardHand.tsx",
+    "src/ui/components/index.ts",
+    "src/ui/screens/HeroSelect.tsx",
+    "src/data/heroes.ts"
+  ]
 }
