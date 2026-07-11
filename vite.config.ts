@@ -4,6 +4,7 @@ import tailwindcss from '@tailwindcss/vite'
 import path from 'path'
 
 export default defineConfig({
+  base: '/card-game/',
   plugins: [react(), tailwindcss()],
   server: {
     host: '127.0.0.1',
