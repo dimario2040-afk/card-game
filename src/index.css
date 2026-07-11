@@ -1,0 +1,114 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-felt-green: #1a6b3c;
+  --color-felt-dark: #0f4d2b;
+  --color-felt-light: #2d8a4e;
+  --color-gold: #ffd700;
+  --color-mystic-purple: #6b21a8;
+  --color-mystic-blue: #2563eb;
+  --color-mystic-teal: #0d9488;
+  --color-card-back: #1e3a5f;
+  --color-surface: #0a0a1a;
+  --color-surface-light: #1a1a2e;
+
+  --font-game: 'Georgia', 'Times New Roman', serif;
+
+  --animate-glow: glow 2s ease-in-out infinite alternate;
+  --animate-float: float 3s ease-in-out infinite;
+  --animate-pulse-soft: pulse-soft 4s ease-in-out infinite;
+  --animate-bounce-in: bounce-in 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --animate-twinkle: twinkle 2s ease-in-out infinite;
+  --animate-float-card: float-card 15s ease-in-out infinite;
+}
+
+@keyframes glow {
+  from {
+    text-shadow: 0 0 10px var(--color-gold);
+  }
+  to {
+    text-shadow:
+      0 0 20px var(--color-gold),
+      0 0 30px var(--color-gold);
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes pulse-soft {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes bounce-in {
+  0% {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.95);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes twinkle {
+  0%, 100% {
+    opacity: 0;
+    transform: scale(0.5) rotate(0deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2) rotate(180deg);
+  }
+}
+
+@keyframes float-card {
+  0%, 100% {
+    transform: translateY(0) rotate(var(--rotation, 0deg));
+    opacity: 0.3;
+  }
+  25% {
+    opacity: 0.6;
+  }
+  50% {
+    transform: translateY(-30px) rotate(var(--rotation, 0deg));
+    opacity: 0.4;
+  }
+  75% {
+    opacity: 0.6;
+  }
+}
+
+body {
+  margin: 0;
+  background: linear-gradient(
+    135deg,
+    var(--color-surface) 0%,
+    #0d1117 50%,
+    var(--color-surface-light) 100%
+  );
+  min-height: 100vh;
+}
+
+#root {
+  min-height: 100vh;
+}
